@@ -25,8 +25,7 @@ Before running the tool, ensure the following dependencies are installed:
 You can install them via pip:
 
 ```bash
-pip install telegram watchdog requests
-Configuration
+pip install -r requirements.txt
 ```
 1. Telegram Bot Setup:
 You need to set up a Telegram bot to receive alerts:
