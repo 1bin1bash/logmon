@@ -121,8 +121,7 @@ sudo systemctl enable logmon.service
 # Start the service immediately
 sudo systemctl start logmon.service
 
-#Created By /bin/basha
-# Telegram:  https://t.me/bin1basha
+
 
 
 ### ملاحظات:
@@ -132,5 +131,6 @@ sudo systemctl start logmon.service
 
 هذا التوجيه سيساعدك في تشغيل أداة مراقبة السجلات كخدمة مستقلة على النظام.
 
-
+#Created By /bin/basha
+# Telegram:  https://t.me/bin1basha
 
