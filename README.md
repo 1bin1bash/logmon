@@ -91,7 +91,7 @@ Create a new systemd service file for the script:
 sudo nano /etc/systemd/system/logmon.service
 ```
 
-
+```
 [Unit]
 Description=Log Monitoring Tool
 After=network.target
@@ -107,7 +107,7 @@ StandardError=append:/var/log/logmon.log
 
 [Install]
 WantedBy=multi-user.target
-
+```
 
 
 
