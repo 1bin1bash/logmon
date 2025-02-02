@@ -17,7 +17,7 @@ Before running the tool, ensure the following dependencies are installed:
 
 1. **Python 3.7+**
 2. **Required Python packages**:
-   - `telegram`
+   - `python-telegram-bot`
    - `watchdog`
    - `requests`
    - `subprocess`
@@ -88,7 +88,7 @@ Create a new systemd service file for the script:
 
 ```bash
 sudo nano /etc/systemd/system/logmon.service
-
+```
 
 
 [Unit]
