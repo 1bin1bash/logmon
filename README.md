@@ -1,4 +1,4 @@
-# Log Monitoring and Alerting Tool
+# Log Monitoring and Alerting Tool  
 
 This Python-based log monitoring tool scans system log files for suspicious activities, including multiple failed login attempts, potential security breaches, and specific patterns like SQL Injection, XSS attacks, and more. It sends alerts via Telegram when such activities are detected.
 
@@ -121,7 +121,8 @@ sudo systemctl enable logmon.service
 # Start the service immediately
 sudo systemctl start logmon.service
 
-
+#Created By /bin/basha
+# Telwgram @b_i_n_b_a_s_h
 
 
 
