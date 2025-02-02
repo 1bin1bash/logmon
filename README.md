@@ -112,14 +112,14 @@ WantedBy=multi-user.target
 
 
 
-## Reload systemd to recognize the new service
-sudo systemctl daemon-reload
+### Reload systemd to recognize the new service
+```sudo systemctl daemon-reload```
 
-## Enable the service to start on boot
-sudo systemctl enable logmon.service
+### Enable the service to start on boot
+```sudo systemctl enable logmon.service```
 
-## Start the service immediately
-sudo systemctl start logmon.service
+### Start the service immediately
+```sudo systemctl start logmon.service```
 
 
 
