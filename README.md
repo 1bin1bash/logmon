@@ -122,8 +122,7 @@ sudo systemctl enable logmon.service
 sudo systemctl start logmon.service
 
 #Created By /bin/basha
-# Telwgram @b_i_n_b_a_s_h
-
+# Telegram:  https://t.me/bin1basha
 
 
 ### ملاحظات:
