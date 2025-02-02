@@ -3,7 +3,7 @@
 This Python-based log monitoring tool scans system log files for suspicious activities, including multiple failed login attempts, potential security breaches, and specific patterns like SQL Injection, XSS attacks, and more. It sends alerts via Telegram when such activities are detected.
 
 ## Features
-- Monitor multiple log files (e.g., `/var/log/auth.log`, `/var/log/syslog`, etc.)
+- Monitor multiple log files (e.g., `/var/log/`, etc.)
 - Detect suspicious activities such as failed login attempts, unauthorized access, SQL Injection, XSS attempts, etc.
 - Alert the user via Telegram Bot when suspicious patterns are detected
 - Periodic reports summarizing blocked IPs and monitored logs
@@ -22,11 +22,12 @@ Before running the tool, ensure the following dependencies are installed:
    - `requests`
    - `subprocess`
 
-You can install them via `pip`:
+You can install them via pip:
 
 ```bash
 pip install telegram watchdog requests
 Configuration
+```
 1. Telegram Bot Setup:
 You need to set up a Telegram bot to receive alerts:
 
