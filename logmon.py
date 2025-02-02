@@ -11,13 +11,13 @@ from watchdog.events import FileSystemEventHandler
 from threading import Thread
 from typing import List, Dict, Set
 
-# Configure logging
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-# Configuration
+
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID")
 LOG_FILES: List[str] = [
@@ -32,27 +32,27 @@ SUSPICIOUS_KEYWORDS: List[str] = [
     "failed", "error", "unauthorized", "attack", "hacked", "root", "brute force"
 ]
 SQLI_PATTERNS = [
-    r"(union.*select)",               # UNION SELECT
-    r"(select.*from)",                # SELECT FROM
-    r"(or\s+\d+\s*=\s*\d+)",          # OR 1=1
-    r"(drop\s+table)",                # DROP TABLE
-    r"(insert\s+into)",               # INSERT INTO
-    r"(update\s+set)",                # UPDATE SET
+    r"(union.*select)",              
+    r"(select.*from)",               
+    r"(or\s+\d+\s*=\s*\d+)",         
+    r"(drop\s+table)",               
+    r"(insert\s+into)",              
+    r"(update\s+set)",               
 ]
 XSS_PATTERNS = [
-    r"<script.*?>.*?</script.*?>",    # <script> XSS pattern
-    r"javascript:",                  # javascript: URI scheme in link or event handler
-    r"on\w+="                         # inline event handlers (e.g., onclick, onerror)
+    r"<script.*?>.*?</script.*?>",    
+    r"javascript:",                 
+    r"on\w+="                        
 ]
 MAX_FAILED_ATTEMPTS: int = 5
-REPORT_INTERVAL: int = 3600  # 1 hour
+REPORT_INTERVAL: int = 3600  
 
 FAILED_LOGIN_ATTEMPTS: Dict[str, int] = defaultdict(int)
 BLOCKED_IPS: Set[str] = set()
 FILE_SIZES: Dict[str, int] = {}
 IP_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
-# Initialize Telegram bot
+
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
 
 
@@ -63,9 +63,9 @@ class LogFileHandler(FileSystemEventHandler):
         """Process new entries in the log file."""
         try:
             with open(log_file, "r") as file:
-                file.seek(FILE_SIZES.get(log_file, 0))  # Start from last read position
+                file.seek(FILE_SIZES.get(log_file, 0)) 
                 lines = file.readlines()
-                FILE_SIZES[log_file] = file.tell()  # Update file pointer
+                FILE_SIZES[log_file] = file.tell()  
                 for line in lines:
                     self.analyze_log_entry(line, log_file)
         except Exception as e:
@@ -79,12 +79,12 @@ class LogFileHandler(FileSystemEventHandler):
             if keyword in lower_line:
                 asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{line}"))
 
-        # SQL Injection Detection
+       
         for pattern in SQLI_PATTERNS:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{line}"))
 
-        # XSS Detection
+       
         for pattern in XSS_PATTERNS:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"XSS Attempt Detected in {log_file}:\n\n{line}"))
