@@ -18,8 +18,8 @@ logging.basicConfig(
 )
 
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7673315342:AAFpPycEnge2AIZ6Kkw6_owmcgu7eGH4nB0")
-CHAT_ID = os.getenv("CHAT_ID", "5831050070")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your_bot_token")
+CHAT_ID = os.getenv("CHAT_ID", "your_chat_id")
 
 
 
