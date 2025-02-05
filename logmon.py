@@ -18,27 +18,20 @@ logging.basicConfig(
 )
 
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID")
-LOG_FILES: List[str] = [
-    "/var/log/auth.log",
-    "/var/log/syslog",
-    "/var/log/nginx/",
-    "/var/log/apache2/",
-    
-
-]
-SUSPICIOUS_KEYWORDS: List[str] = [
-    "failed", "error", "unauthorized", "attack", "hacked", "root", "brute force"
-]
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7673315342:AAFpPycEnge2AIZ6Kkw6_owmcgu7eGH4nB0")
+CHAT_ID = os.getenv("CHAT_ID", "5831050070")
 
 
 
-with open("json/xss_patterns.json", "r", encoding="utf-8") as file_xss:
-    json_data = json.load(file_xss)
+
+with open("json/xss_patterns.json", "r", encoding="utf-8") as json_file:
+    json_data = json.load(json_file)
 
 
-
+LOG_FILES = json_data["LOG_FILES"]
+SUSPICIOUS_KEYWORDS = json_data["SUSPICIOUS_KEYWORDS"]
+XSS_PATTERNS = json_data["XSS_PATTERNS"]
+SQLI_PATTERNS = json_data["SQLI_PATTERNS"]
 
 
 MAX_FAILED_ATTEMPTS: int = 5
@@ -77,12 +70,12 @@ class LogFileHandler(FileSystemEventHandler):
                 asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{line}"))
 
 
-        for pattern in json_data["SQLI_PATTERNS"]:
+        for pattern in SQLI_PATTERNS:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{line}"))
 
 
-        for pattern in json_data["XSS_PATTERNS"]:
+        for pattern in XSS_PATTERNS:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"XSS Attempt Detected in {log_file}:\n\n{line}"))
 
