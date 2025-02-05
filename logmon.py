@@ -10,7 +10,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from threading import Thread
 from typing import List, Dict, Set
-
+import json
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_TELEGRAM_BOT_TOKEN")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID", "YOUR_CHAT_ID")
 LOG_FILES: List[str] = [
     "/var/log/auth.log",
@@ -31,19 +31,16 @@ LOG_FILES: List[str] = [
 SUSPICIOUS_KEYWORDS: List[str] = [
     "failed", "error", "unauthorized", "attack", "hacked", "root", "brute force"
 ]
-SQLI_PATTERNS = [
-    r"(union.*select)",              
-    r"(select.*from)",               
-    r"(or\s+\d+\s*=\s*\d+)",         
-    r"(drop\s+table)",               
-    r"(insert\s+into)",              
-    r"(update\s+set)",               
-]
-XSS_PATTERNS = [
-    r"<script.*?>.*?</script.*?>",    
-    r"javascript:",                 
-    r"on\w+="                        
-]
+
+
+
+with open("json/xss_patterns.json", "r", encoding="utf-8") as file_xss:
+    json_data = json.load(file_xss)
+
+
+
+
+
 MAX_FAILED_ATTEMPTS: int = 5
 REPORT_INTERVAL: int = 3600  
 
@@ -79,13 +76,13 @@ class LogFileHandler(FileSystemEventHandler):
             if keyword in lower_line:
                 asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{line}"))
 
-       
-        for pattern in SQLI_PATTERNS:
+
+        for pattern in json_data["SQLI_PATTERNS"]:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{line}"))
 
-       
-        for pattern in XSS_PATTERNS:
+
+        for pattern in json_data["XSS_PATTERNS"]:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"XSS Attempt Detected in {log_file}:\n\n{line}"))
 
@@ -171,7 +168,6 @@ def main() -> None:
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
-
 
 if __name__ == "__main__":
     main()
