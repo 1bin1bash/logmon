@@ -24,7 +24,7 @@ CHAT_ID = os.getenv("CHAT_ID", "5831050070")
 
 
 
-with open("json/xss_patterns.json", "r", encoding="utf-8") as json_file:
+with open("json/patterns.json", "r", encoding="utf-8") as json_file:
     json_data = json.load(json_file)
 
 
