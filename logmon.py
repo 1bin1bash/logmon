@@ -18,8 +18,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-
-TELEGRAM_BOT_TOKEN = "yor_bot_token"
+TELEGRAM_BOT_TOKEN = "your_bot_token"
 CHAT_ID = "your_chat_id"
 
 with open("json/patterns.json", "r", encoding="utf-8") as json_file:
@@ -57,28 +56,26 @@ class LogFileHandler(FileSystemEventHandler):
 
     def analyze_log_entry(self, line: str, log_file: str) -> None:
         """Analyze a single log entry for suspicious activity."""
-        lower_line = line.lower()
+        decoded_line = urllib.parse.unquote(line)
+        logging.info(f"Decoded Line: {decoded_line}")
 
-        decoded_url = urllib.parse.unquote(line)
-        logging.info(f"Decoded URL: {decoded_url}")
-
-        if any(c.islower() for c in decoded_url) and any(c.isupper() for c in decoded_url):
-            logging.info(f"URL contains both uppercase and lowercase characters: {decoded_url}")
+        if any(c.islower() for c in decoded_line) and any(c.isupper() for c in decoded_line):
+            logging.info(f"Decoded line contains mixed case characters: {decoded_line}")
 
         for keyword in SUSPICIOUS_KEYWORDS:
-            if keyword in lower_line:
-                asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{line}"))
+            if keyword in decoded_line.lower():
+                asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{decoded_line}"))
 
         for pattern in SQLI_PATTERNS:
-            if re.search(pattern, lower_line):
-                asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{line}"))
+            if re.search(pattern, decoded_line.lower()):
+                asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{decoded_line}"))
 
         for pattern in XSS_PATTERNS:
-            if re.search(pattern, lower_line):
-                asyncio.run(self.send_alert(f"XSS Attempt Detected in {log_file}:\n\n{line}"))
+            if re.search(pattern, decoded_line.lower()):
+                asyncio.run(self.send_alert(f"XSS Attempt Detected in {log_file}:\n\n{decoded_line}"))
 
-        if "failed password" in lower_line or "invalid user" in lower_line:
-            match = IP_PATTERN.search(line)
+        if "failed password" in decoded_line.lower() or "invalid user" in decoded_line.lower():
+            match = IP_PATTERN.search(decoded_line)
             if match:
                 ip = match.group()
                 FAILED_LOGIN_ATTEMPTS[ip] += 1
