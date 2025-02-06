@@ -11,6 +11,7 @@ from watchdog.events import FileSystemEventHandler
 from threading import Thread
 from typing import List, Dict, Set
 import json
+import urllib.parse
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,33 +19,26 @@ logging.basicConfig(
 )
 
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "your_bot_token")
-CHAT_ID = os.getenv("CHAT_ID", "your_chat_id")
-
-
-
+TELEGRAM_BOT_TOKEN = "yor_bot_token"
+CHAT_ID = "your_chat_id"
 
 with open("json/patterns.json", "r", encoding="utf-8") as json_file:
     json_data = json.load(json_file)
-
 
 LOG_FILES = json_data["LOG_FILES"]
 SUSPICIOUS_KEYWORDS = json_data["SUSPICIOUS_KEYWORDS"]
 XSS_PATTERNS = json_data["XSS_PATTERNS"]
 SQLI_PATTERNS = json_data["SQLI_PATTERNS"]
 
-
 MAX_FAILED_ATTEMPTS: int = 5
-REPORT_INTERVAL: int = 3600  
+REPORT_INTERVAL: int = 3600
 
 FAILED_LOGIN_ATTEMPTS: Dict[str, int] = defaultdict(int)
 BLOCKED_IPS: Set[str] = set()
 FILE_SIZES: Dict[str, int] = {}
 IP_PATTERN = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
 
-
 bot = Bot(token=TELEGRAM_BOT_TOKEN)
-
 
 class LogFileHandler(FileSystemEventHandler):
     """Handles file system events for monitored log files."""
@@ -65,15 +59,19 @@ class LogFileHandler(FileSystemEventHandler):
         """Analyze a single log entry for suspicious activity."""
         lower_line = line.lower()
 
+        decoded_url = urllib.parse.unquote(line)
+        logging.info(f"Decoded URL: {decoded_url}")
+
+        if any(c.islower() for c in decoded_url) and any(c.isupper() for c in decoded_url):
+            logging.info(f"URL contains both uppercase and lowercase characters: {decoded_url}")
+
         for keyword in SUSPICIOUS_KEYWORDS:
             if keyword in lower_line:
                 asyncio.run(self.send_alert(f"Suspicious Activity Detected in {log_file}:\n\n{line}"))
 
-
         for pattern in SQLI_PATTERNS:
             if re.search(pattern, lower_line):
                 asyncio.run(self.send_alert(f"SQL Injection Detected in {log_file}:\n\n{line}"))
-
 
         for pattern in XSS_PATTERNS:
             if re.search(pattern, lower_line):
@@ -93,7 +91,7 @@ class LogFileHandler(FileSystemEventHandler):
             max_length = 4096  
             for i in range(0, len(message), max_length):
                 chunk = message[i:i + max_length]
-                await bot.send_message(chat_id=CHAT_ID, text=chunk)
+                await bot.send_message(chat_id=CHAT_ID, text=chunk) 
                 logging.info(f"Sent message chunk: {chunk[:50]}...") 
         except Exception as e:
             logging.error(f"Error sending Telegram message: {e}")
@@ -113,7 +111,7 @@ class LogFileHandler(FileSystemEventHandler):
             self.process_new_entries(event.src_path)
 
 
-def monitor_file_size() -> None:
+async def monitor_file_size() -> None:
     """Monitor log file sizes for sudden increases."""
     global FILE_SIZES
     while True:
@@ -123,25 +121,25 @@ def monitor_file_size() -> None:
                 if log_file in FILE_SIZES:
                     old_size = FILE_SIZES[log_file]
                     if size > old_size * 1.5:
-                        asyncio.run(bot.send_message(chat_id=CHAT_ID, text=f"Warning: {log_file} size increased suddenly!"))
+                        await bot.send_message(chat_id=CHAT_ID, text=f"Warning: {log_file} size increased suddenly!")
                 FILE_SIZES[log_file] = size
-        time.sleep(60)
+        await asyncio.sleep(60)
 
 
-def send_periodic_report() -> None:
+async def send_periodic_report() -> None:
     """Send periodic security reports."""
     while True:
-        time.sleep(REPORT_INTERVAL)
+        await asyncio.sleep(REPORT_INTERVAL)
         report = "System Security Report:\n"
         report += f"Monitored Logs: {len(LOG_FILES)}\n"
         report += f"Blocked IPs: {len(BLOCKED_IPS)}\n"
         try:
-            asyncio.run(bot.send_message(chat_id=CHAT_ID, text=report))
+            await bot.send_message(chat_id=CHAT_ID, text=report)
         except Exception as e:
             logging.error(f"Failed to send periodic report: {e}")
 
 
-def main() -> None:
+async def main() -> None:
     """Main function to start monitoring."""
     event_handler = LogFileHandler()
     observer = Observer()
@@ -150,17 +148,15 @@ def main() -> None:
             observer.schedule(event_handler, path=os.path.dirname(log_file), recursive=False)
     observer.start()
 
-    size_monitor_thread = Thread(target=monitor_file_size, daemon=True)
-    report_thread = Thread(target=send_periodic_report, daemon=True)
-    size_monitor_thread.start()
-    report_thread.start()
+    asyncio.create_task(monitor_file_size())
+    asyncio.create_task(send_periodic_report())
 
     try:
         while True:
-            time.sleep(5)
+            await asyncio.sleep(5)
     except KeyboardInterrupt:
         observer.stop()
     observer.join()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
